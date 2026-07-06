@@ -19,6 +19,9 @@ func NewSudokuGenerator() *SudokuGenerator {
 // Generate 生成指定难度的数独题目
 func (g *SudokuGenerator) Generate(difficulty model.Difficulty) (*model.Puzzle, error) {
 	maxAttempts := 100
+	if difficulty == model.Expert {
+		maxAttempts = 5000 // 专家级需要更多尝试
+	}
 
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		// 1. 生成完整终盘
@@ -156,15 +159,15 @@ func (g *SudokuGenerator) solveWithCount(board [9][9]int, count *int) bool {
 func (g *SudokuGenerator) getHolesByDifficulty(difficulty model.Difficulty) int {
 	switch difficulty {
 	case model.Easy:
-		return randRange(25, 35)
+		return 25
 	case model.Medium:
-		return randRange(35, 45)
+		return 35
 	case model.Hard:
-		return randRange(45, 55)
+		return 45
 	case model.Expert:
-		return randRange(55, 60)
+		return 55
 	default:
-		return 30
+		return 25
 	}
 }
 

@@ -12,17 +12,16 @@ import (
 
 // 生成题库工具
 // 运行方式: go test -v -run TestGeneratePuzzles ./internal/generator/
-// 或直接运行: go run internal/generator/generator_tool.go
 
 func TestGeneratePuzzles(t *testing.T) {
 	tasks := []struct {
 		difficulty model.Difficulty
 		count      int
 	}{
-		{model.Easy, 15},
-		{model.Medium, 15},
-		{model.Hard, 15},
-		{model.Expert, 1},
+		{model.Easy, 100},
+		{model.Medium, 100},
+		{model.Hard, 100},
+		{model.Expert, 20},
 	}
 
 	// 从配置文件读取数据库路径
@@ -65,20 +64,30 @@ func TestGeneratePuzzles(t *testing.T) {
 
 		// 生成并保存
 		batchSize := 10
-		for i := 0; i < needed; i += batchSize {
+		generatedCount := 0
+		for generatedCount < needed {
 			currentBatch := batchSize
-			if i+batchSize > needed {
-				currentBatch = needed - i
+			if generatedCount+batchSize > needed {
+				currentBatch = needed - generatedCount
 			}
 
-			puzzles := generateBatch(gen, task.difficulty, currentBatch)
-			if err := repo.SaveBatch(puzzles); err != nil {
-				log.Printf("  保存失败: %v", err)
-				continue
+			puzzles, successCount := generateBatch(gen, task.difficulty, currentBatch)
+			if len(puzzles) > 0 {
+				if err := repo.SaveBatch(puzzles); err != nil {
+					log.Printf("  保存失败: %v", err)
+					continue
+				}
 			}
 
-			total += currentBatch
-			fmt.Printf("  已生成: %d/%d\n", i+currentBatch, needed)
+			generatedCount += successCount
+			total += successCount
+			fmt.Printf("  已生成: %d/%d\n", generatedCount, needed)
+
+			// 如果这批全部失败，避免死循环
+			if successCount == 0 {
+				fmt.Printf("    警告: 连续生成失败，跳过剩余\n")
+				break
+			}
 		}
 
 		// 验证最终数量
@@ -90,16 +99,23 @@ func TestGeneratePuzzles(t *testing.T) {
 	fmt.Printf("\n生成完成！总计新增: %d 道题目\n", total)
 }
 
-func generateBatch(gen *SudokuGenerator, difficulty model.Difficulty, count int) []model.Puzzle {
+func generateBatch(gen *SudokuGenerator, difficulty model.Difficulty, count int) ([]model.Puzzle, int) {
 	puzzles := make([]model.Puzzle, 0, count)
+	failedCount := 0
 
 	for i := 0; i < count; i++ {
 		puzzle, err := gen.Generate(difficulty)
 		if err != nil {
+			failedCount++
 			continue
 		}
 		puzzles = append(puzzles, *puzzle)
 	}
 
-	return puzzles
+	successCount := count - failedCount
+	if failedCount > 0 {
+		fmt.Printf("    警告: %d 个生成失败\n", failedCount)
+	}
+
+	return puzzles, successCount
 }
