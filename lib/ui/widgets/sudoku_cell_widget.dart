@@ -7,6 +7,7 @@ class SudokuCellWidget extends StatelessWidget {
   final VoidCallback onTap;
   final int row;
   final int col;
+  final List<List<int>>? solution;  // 添加 solution 参数
 
   const SudokuCellWidget({
     super.key,
@@ -14,6 +15,7 @@ class SudokuCellWidget extends StatelessWidget {
     required this.onTap,
     required this.row,
     required this.col,
+    this.solution,
   });
 
   /// 判断是否需要在右侧显示粗边框（3×3宫格边界）
@@ -90,12 +92,18 @@ class SudokuCellWidget extends StatelessWidget {
     return Colors.white;
   }
 
+  /// 判断数字是否错误（与 solution 对比）
+  bool get isWrong {
+    if (cell.isFixed || cell.isEmpty || solution == null) return false;
+    final correctValue = solution![row][col];
+    return cell.value != correctValue;
+  }
+
   /// 获取文字颜色
   Color _getTextColor(BuildContext context) {
-    if (cell.hasConflict) {
-      return Colors.red[700]!;
+    if (isWrong) {
+      return Colors.red;
     }
-    
     return Colors.black87;
   }
 }

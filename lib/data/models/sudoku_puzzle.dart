@@ -5,6 +5,7 @@ enum Difficulty {
   easy,
   medium,
   hard,
+  expert,
 }
 
 /// 数独谜题数据模型
@@ -18,10 +19,14 @@ class SudokuPuzzle {
   /// 谜题 ID
   final String id;
 
+  /// 完整答案（用于验证）
+  final List<List<int>>? solution;
+
   const SudokuPuzzle({
     required this.grid,
     required this.difficulty,
     required this.id,
+    this.solution,
   });
 
   /// 从二维整数数组创建谜题
@@ -29,6 +34,7 @@ class SudokuPuzzle {
     required List<List<int>> matrix,
     required Difficulty difficulty,
     required String id,
+    List<List<int>>? solution,
   }) {
     final grid = <List<SudokuCell>>[];
 
@@ -49,6 +55,7 @@ class SudokuPuzzle {
       grid: grid,
       difficulty: difficulty,
       id: id,
+      solution: solution,
     );
   }
 
@@ -76,6 +83,7 @@ class SudokuPuzzle {
       grid: newGrid,
       difficulty: difficulty,
       id: id,
+      solution: solution,
     );
   }
 

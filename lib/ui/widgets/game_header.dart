@@ -97,6 +97,8 @@ class GameHeader extends StatelessWidget {
         return '中等';
       case Difficulty.hard:
         return '困难';
+      case Difficulty.expert:
+        return '专家';
     }
   }
 
@@ -109,6 +111,8 @@ class GameHeader extends StatelessWidget {
         return Colors.orange;
       case Difficulty.hard:
         return Colors.red;
+      case Difficulty.expert:
+        return Colors.purple;
     }
   }
 }

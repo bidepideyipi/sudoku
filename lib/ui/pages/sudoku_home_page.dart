@@ -99,25 +99,32 @@ class SudokuHomePage extends StatelessWidget {
         content: const Text('选择难度'),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              context.read<SudokuGameProvider>().newGame(Difficulty.easy);
+              await context.read<SudokuGameProvider>().newGame(Difficulty.easy);
             },
             child: const Text('简单'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              context.read<SudokuGameProvider>().newGame(Difficulty.medium);
+              await context.read<SudokuGameProvider>().newGame(Difficulty.medium);
             },
             child: const Text('中等'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              context.read<SudokuGameProvider>().newGame(Difficulty.hard);
+              await context.read<SudokuGameProvider>().newGame(Difficulty.hard);
             },
             child: const Text('困难'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await context.read<SudokuGameProvider>().newGame(Difficulty.expert);
+            },
+            child: const Text('专家'),
           ),
         ],
       ),

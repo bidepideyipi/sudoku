@@ -62,7 +62,7 @@ class NumberPad extends StatelessWidget {
         child: Text(
           number.toString(),
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 36,
             fontWeight: FontWeight.bold,
           ),
         ),

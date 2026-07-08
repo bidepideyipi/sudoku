@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/sudoku_puzzle.dart';
-import '../../data/repositories/mock_puzzle_repository.dart';
+import '../../data/repositories/puzzle_repository.dart';
 import '../validators/sudoku_validator.dart';
 
 /// 游戏状态
@@ -17,7 +17,10 @@ enum GameStatus {
 
 /// 数独游戏状态管理 Provider
 class SudokuGameProvider extends ChangeNotifier {
-  final MockPuzzleRepository _repository = MockPuzzleRepository();
+  final PuzzleRepository _repository = PuzzleRepository();
+
+  /// 是否已初始化
+  bool _isInitialized = false;
 
   /// 当前谜题
   SudokuPuzzle _currentPuzzle = SudokuPuzzle.fromMatrix(
@@ -53,6 +56,34 @@ class SudokuGameProvider extends ChangeNotifier {
   /// 获取验证结果
   ValidationResult? get validationResult => _validationResult;
 
+  /// 初始化 Provider
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    try {
+      debugPrint('开始初始化 Repository...');
+      await _repository.init();
+      _isInitialized = true;
+      debugPrint('Repository 初始化成功');
+
+      // 加载第一个题目
+      debugPrint('加载简单难度题目...');
+      await newGame(Difficulty.easy);
+      debugPrint('题目加载成功');
+    } catch (e) {
+      // 初始化失败，使用空题目
+      debugPrint('初始化失败: $e');
+      _isInitialized = true;
+
+      // 创建一个默认题目
+      _currentPuzzle = SudokuPuzzle.fromMatrix(
+        matrix: _emptyMatrix(),
+        difficulty: Difficulty.easy,
+        id: 'fallback',
+      );
+    }
+  }
+
   /// 是否有选中的单元格
   bool get hasSelection => _selectedPosition != null;
 
@@ -68,9 +99,9 @@ class SudokuGameProvider extends ChangeNotifier {
   }
 
   /// 开始新游戏
-  void newGame([Difficulty? difficulty]) {
+  Future<void> newGame([Difficulty? difficulty]) async {
     _currentDifficulty = difficulty ?? _currentDifficulty;
-    _currentPuzzle = _repository.getPuzzle(_currentDifficulty);
+    _currentPuzzle = await _repository.getPuzzle(_currentDifficulty);
     _selectedPosition = null;
     _gameStatus = GameStatus.playing;
     _validationResult = null;
@@ -78,8 +109,8 @@ class SudokuGameProvider extends ChangeNotifier {
   }
 
   /// 重新开始当前游戏
-  void restartGame() {
-    final puzzle = _repository.getPuzzle(_currentDifficulty);
+  Future<void> restartGame() async {
+    final puzzle = await _repository.getPuzzle(_currentDifficulty);
     _currentPuzzle = puzzle;
     _selectedPosition = null;
     _gameStatus = GameStatus.playing;
@@ -234,8 +265,16 @@ class SudokuGameProvider extends ChangeNotifier {
     // 只提示非固定值的单元格
     if (cell.isFixed) return;
 
-    // 这里简化处理，随机选择一个有效数字
-    // 实际应用应该使用求解器获取正确答案
+    // 优先使用 solution 字段获取正确答案
+    if (_currentPuzzle.solution != null) {
+      final correctValue = _currentPuzzle.solution![row][col];
+      if (correctValue != 0) {
+        inputNumber(correctValue);
+        return;
+      }
+    }
+
+    // 降级：随机选择一个有效数字
     for (int num = 1; num <= 9; num++) {
       if (SudokuValidator.isValidPlacement(_currentPuzzle, row, col, num)) {
         inputNumber(num);

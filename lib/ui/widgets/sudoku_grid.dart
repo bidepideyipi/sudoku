@@ -41,6 +41,7 @@ class SudokuGrid extends StatelessWidget {
             row: row,
             col: col,
             onTap: () => onCellTap(row, col),
+            solution: puzzle.solution,
           );
         },
       ),
