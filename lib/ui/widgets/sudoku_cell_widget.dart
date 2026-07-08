@@ -54,8 +54,8 @@ class SudokuCellWidget extends StatelessWidget {
               : Text(
                   cell.value.toString(),
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: cell.isFixed ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 36,// 棋盘字体大小
+                    fontWeight: FontWeight.normal,
                     color: _getTextColor(context),
                   ),
                 ),
@@ -95,9 +95,7 @@ class SudokuCellWidget extends StatelessWidget {
     if (cell.hasConflict) {
       return Colors.red[700]!;
     }
-    if (cell.isFixed) {
-      return Colors.black87;
-    }
-    return Theme.of(context).colorScheme.primary;
+    
+    return Colors.black87;
   }
 }
