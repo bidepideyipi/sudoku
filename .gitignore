@@ -114,3 +114,4 @@ macos/Runner.xcworkspace/contents.xcworkspacedata
 windows/flutter/generated_plugins.cmake
 macos/Flutter/Flutter-Release.xcconfig
 macos/Flutter/Flutter-Debug.xcconfig
+.mcp.json

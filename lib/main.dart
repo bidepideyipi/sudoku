@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'logic/providers/sudoku_game_provider.dart';
+import 'logic/providers/settings_provider.dart';
+import 'data/datasources/user_settings_datasource.dart';
+import 'ui/pages/lobby_page.dart';
 import 'ui/pages/sudoku_home_page.dart';
 
 void main() {
@@ -12,15 +15,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SudokuGameProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(UserSettingsDataSource()),
+        ),
+      ],
       child: MaterialApp(
         title: '数独',
         debugShowCheckedModeBanner: false,
         theme: _buildLightTheme(),
         darkTheme: _buildDarkTheme(),
         themeMode: ThemeMode.system,
-        home: const AppInitializer(),
+        home: const LobbyPage(),
       ),
     );
   }
@@ -73,70 +80,5 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// 应用初始化 Widget
-class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
-
-  @override
-  State<AppInitializer> createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  bool _isInitialized = false;
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    try {
-      final provider = context.read<SudokuGameProvider>();
-      await provider.initialize();
-      if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_hasError) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.red),
-              SizedBox(height: 16),
-              Text('初始化失败，请检查网络连接'),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (!_isInitialized) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    return const SudokuHomePage();
   }
 }
